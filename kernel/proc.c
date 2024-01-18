@@ -140,6 +140,9 @@ found:
     return 0;
   }
 
+  // Set default syscall trace mask
+  p->traceMask = 0;
+
   // Set up new context to start executing at forkret,
   // which returns to user space.
   memset(&p->context, 0, sizeof(p->context));
@@ -298,6 +301,9 @@ fork(void)
 
   // copy saved user registers.
   *(np->trapframe) = *(p->trapframe);
+
+  // copy trace mask from parent to child
+  np->traceMask = p->traceMask;
 
   // Cause fork to return 0 in the child.
   np->trapframe->a0 = 0;

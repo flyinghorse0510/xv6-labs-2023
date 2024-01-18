@@ -91,3 +91,18 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+
+uint64
+sys_trace(void)
+{
+  // get user-space parameters
+  int traceMask;
+  argint(0, &traceMask);
+  // get process structure
+  struct proc *p = myproc();
+  // copy mask into the process structure
+  p->traceMask = traceMask;
+  
+  return 0;
+
+}
