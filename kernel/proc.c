@@ -102,6 +102,24 @@ allocpid()
   return pid;
 }
 
+// sysinfo [lab2]
+uint64
+proc_count(void)
+{
+  struct proc *p;
+  int count = 0;
+  // Look in the process table for counting the number of all processes
+  for(p = proc; p < &proc[NPROC]; p++) {
+    acquire(&p->lock);
+    if (p->state != UNUSED) {
+      count++;
+    }
+    release(&p->lock);
+  }
+
+  return count;
+}
+
 // Look in the process table for an UNUSED proc.
 // If found, initialize state required to run in the kernel,
 // and return with p->lock held.
