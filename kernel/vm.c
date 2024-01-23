@@ -449,3 +449,31 @@ copyinstr(pagetable_t pagetable, char *dst, uint64 srcva, uint64 max)
     return -1;
   }
 }
+
+// Recursively print the pagetable in specified format
+// Lab3 [print a page table]
+void
+vmprint(pagetable_t pagetable)
+{
+  printf("page table %p\n", pagetable);
+  for (int i = 0; i < 512; i++) {
+    pte_t pte = pagetable[i];
+    printf("..%d: pte %p pa %p\n", i, pte, PTE2PA(pte));
+    if ((pte & PTE_V) && ((pte & (PTE_R | PTE_W | PTE_X)) == 0)) {
+      // not the final tbe entry, go ahead
+      pagetable_t secondPageTable = (pagetable_t)(PTE2PA(pagetable[i]));
+      for (int j = 0; j < 512; j++) {
+        pte_t pte = secondPageTable[j];
+        printf(".. ..%d: pte %p pa %p\n", j, pte, PTE2PA(pte));
+        if ((pte & PTE_V) && ((pte & (PTE_R | PTE_W | PTE_X)) == 0)) {
+          // not the final tbe entry, go ahead
+          pagetable_t thirdPageTable = (pagetable_t)(PTE2PA(secondPageTable[j]));
+          for (int k = 0; k < 512; k++) {
+            pte_t pte = thirdPageTable[k];
+            printf(".. .. ..%d: pte %p pa %p\n", k, pte, PTE2PA(pte));
+          }
+        }
+      }
+    }
+  }
+}
