@@ -75,6 +75,37 @@ int
 sys_pgaccess(void)
 {
   // lab pgtbl: your code here.
+  // get user-space system call parameters
+  uint64 startPageAddr;
+  int numPage;
+  uint64 resultAddr;
+  argaddr(0, &startPageAddr);
+  argint(1, &numPage);
+  argaddr(2, &resultAddr);
+
+  // kernel result buffer
+  uint64 result = 0;
+
+  // get the user-space page table
+  struct proc *p = myproc();
+  pagetable_t userPageTable = p->pagetable;
+
+  // fill in the result buffer by checking the `A` bit of PTE
+  for (int i = 0; i < numPage; i++) {
+    // page walk to find the PA of PTE
+    uint64* pa = walk(userPageTable, startPageAddr, 0);
+    pte_t pte = *pa;
+    // get the `A` bit of PTE
+    result |= (((pte & PTE_A) >> 6) << i);
+    // clear the PTE_A bit
+    *pa = (pte & ~PTE_A);
+    // update user-space start address
+    startPageAddr += PGSIZE;
+  }
+
+  // copy result to user-space
+  copyout(userPageTable, resultAddr, (char*)(&result), 4);
+
   return 0;
 }
 #endif
